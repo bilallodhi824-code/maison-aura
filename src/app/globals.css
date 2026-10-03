@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
+
+  --color-gold-50: #FBF8F6;
+  --color-gold-100: #F7ECE9;
+  --color-gold-200: #ECD5CE;
+  --color-gold-300: #E0B2A6;
+  --color-gold-400: #C87A6F; /* Elegant Terracotta / Rust Rose */
+  --color-gold-500: #B5655B;
+  --color-gold-600: #9F5148;
+  --color-gold-700: #863D36;
+  --color-gold-800: #6E2E28;
+  --color-gold-900: #4B1F1B;
+  
+  --color-dark-base: #EFECE6;  /* Elegant Warm Sand base */
+  --color-dark-card: #FAF7F2;  /* Light Warm Alabaster Card background */
+  --color-dark-accent: #E4DFD5; /* Muted Warm Gray/Stone */
+  --color-walnut: #D0C9BD;      /* Warm Earthy Gray divider */
+}
+
+@layer base {
+  body {
+    background-color: #EFECE6;
+    color: #1F2633; /* Rich Charcoal Indigo */
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    letter-spacing: 0.05em;
+  }
+
+  /* Global light mode text contrast overrides */
+  .text-white, .text-\[\#FAF9F6\] {
+    color: #1F2633 !important;
+  }
+  
+  .text-gray-300 {
+    color: #4A5260 !important;
+  }
+  
+  .text-gray-400 {
+    color: #5D6675 !important;
+  }
+  
+  .text-gray-500 {
+    color: #727D8F !important;
+  }
+}
+
+/* Glassmorphism custom components */
+.glass-panel {
+  background: rgba(250, 247, 242, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 122, 111, 0.15);
+}
+
+.gold-glow {
+  text-shadow: 0 0 10px rgba(200, 122, 111, 0.15);
+}
+
+.gold-border-glow {
+  box-shadow: 0 10px 30px rgba(200, 122, 111, 0.06);
+}
+
+/* Custom premium transitions */
+.transition-luxury {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #EFECE6;
+}
+::-webkit-scrollbar-thumb {
+  background: #D0C9BD;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C87A6F;
+}
