@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useState, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createReservation, createOrderInquiry } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
-import { Calendar, Users, Clock, GlassWater, Sparkles, CheckCircle2, ShoppingBag } from "lucide-react";
+import { Calendar, Users, Clock, CheckCircle2, ShoppingBag } from "lucide-react";
 
 function ReservationContent() {
   const searchParams = useSearchParams();
@@ -16,29 +17,20 @@ function ReservationContent() {
 
   const { cart, cartTotal, clearCart } = useApp();
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     name: "",
     email: "",
     phone: "",
     date: "",
     time: "19:30",
     guestCount: 2,
-    diningType: "Regular Dining",
-    notes: "",
-  });
+    diningType: typeParam || "Regular Dining",
+    notes: packageParam ? `Interested in buffet package: ${packageParam}. ` : "",
+  }));
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [bookingId, setBookingId] = useState("");
-
-  useEffect(() => {
-    if (typeParam) {
-      setFormData((prev) => ({ ...prev, diningType: typeParam }));
-    }
-    if (packageParam) {
-      setFormData((prev) => ({ ...prev, notes: `Interested in buffet package: ${packageParam}. ` }));
-    }
-  }, [typeParam, packageParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,12 +88,12 @@ function ReservationContent() {
             <p className="font-serif text-sm font-bold text-gold-400 tracking-widest uppercase">{bookingId}</p>
           </div>
           <div className="pt-6">
-            <a
+            <Link
               href="/"
               className="px-8 py-3.5 bg-gold-400 text-dark-base hover:bg-transparent hover:text-gold-400 border border-gold-400 text-xs font-bold uppercase tracking-widest transition-luxury inline-block"
             >
               Return to Zenith
-            </a>
+            </Link>
           </div>
         </div>
       ) : (
@@ -172,6 +164,7 @@ function ReservationContent() {
                   <input
                     type="date"
                     required
+                    min={new Date().toISOString().split("T")[0]}
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     className="w-full bg-dark-base border border-gold-400/20 focus:border-gold-400 outline-none px-4 py-3 text-xs text-[#FAF9F6] transition-luxury"

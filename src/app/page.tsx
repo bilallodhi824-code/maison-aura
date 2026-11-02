@@ -2,16 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getMenuItems, getBuffetPackages } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
-import { Calendar, ChevronRight, Award, Star, ArrowRight, ShieldCheck, Quote } from "lucide-react";
+import { ChevronRight, Award, ArrowRight, Quote } from "lucide-react";
+import { MenuItem, BuffetPackage } from "@/types";
 
 export default function HomePage() {
   const { addToCart } = useApp();
-  const [specials, setSpecials] = useState<any[]>([]);
-  const [buffets, setBuffets] = useState<any[]>([]);
+  const [specials, setSpecials] = useState<MenuItem[]>([]);
+  const [buffets, setBuffets] = useState<BuffetPackage[]>([]);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   useEffect(() => {
@@ -46,6 +48,13 @@ export default function HomePage() {
       stars: 5,
     }
   ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [testimonials.length]);
 
   return (
     <div className="min-h-screen bg-dark-base flex flex-col">
@@ -111,11 +120,13 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Visual Column */}
             <div className="relative">
-              <div className="aspect-[4/5] border border-gold-400/20 p-3 bg-dark-card rounded-sm">
-                <img 
+              <div className="relative aspect-[4/5] border border-gold-400/20 p-3 bg-dark-card rounded-sm overflow-hidden">
+                <Image 
                   src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop" 
                   alt="Executive Chef" 
-                  className="w-full h-full object-cover filter grayscale contrast-125 hover:grayscale-0 transition-luxury"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover filter grayscale contrast-125 hover:grayscale-0 transition-luxury p-3"
                 />
               </div>
               <div className="absolute -bottom-6 -right-6 bg-gold-400 text-dark-base p-6 rounded shadow-xl hidden sm:block">
@@ -221,12 +232,14 @@ export default function HomePage() {
                 className="group bg-dark-card border border-gold-400/10 rounded-sm overflow-hidden flex flex-col justify-between hover:border-gold-400/30 transition-luxury hover:shadow-lg"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img 
+                  <Image 
                     src={dish.image} 
                     alt={dish.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-luxury duration-700"
                   />
-                  <span className="absolute top-3 left-3 bg-gold-400 text-dark-base text-[9px] font-bold uppercase tracking-widest px-2.5 py-1">
+                  <span className="absolute top-3 left-3 bg-gold-400 text-dark-base text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 z-10">
                     Chef Special
                   </span>
                 </div>
@@ -306,11 +319,13 @@ export default function HomePage() {
 
             {/* Visual Column */}
             <div className="relative order-1 lg:order-2">
-              <div className="aspect-video sm:aspect-[4/3] border border-gold-400/20 p-3 bg-dark-base rounded-sm overflow-hidden">
-                <img 
+              <div className="relative aspect-video sm:aspect-[4/3] border border-gold-400/20 p-3 bg-dark-base rounded-sm overflow-hidden">
+                <Image 
                   src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=800&auto=format&fit=crop" 
                   alt="Buffet feast" 
-                  className="w-full h-full object-cover filter contrast-110 brightness-90 hover:scale-105 transition-luxury duration-700"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover filter contrast-110 brightness-90 hover:scale-105 transition-luxury duration-700 p-3"
                 />
               </div>
               <div className="absolute -top-4 -left-4 bg-dark-base border border-gold-400/20 px-5 py-3 text-center rounded hidden sm:block">
@@ -328,16 +343,24 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Visual Column */}
             <div className="grid grid-cols-2 gap-4">
-              <img 
-                src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop" 
-                alt="Ambiance 1" 
-                className="w-full h-full object-cover border border-gold-400/10 rounded-sm hover:border-gold-400/30 transition-luxury"
-              />
-              <img 
-                src="https://images.unsplash.com/photo-1560624052-449f5ddf0c31?q=80&w=400&auto=format&fit=crop" 
-                alt="Ambiance 2" 
-                className="w-full h-full object-cover border border-gold-400/10 rounded-sm hover:border-gold-400/30 transition-luxury mt-8"
-              />
+              <div className="relative aspect-[3/4] border border-gold-400/10 rounded-sm overflow-hidden hover:border-gold-400/30 transition-luxury">
+                <Image 
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop" 
+                  alt="Ambiance 1" 
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="relative aspect-[3/4] border border-gold-400/10 rounded-sm overflow-hidden hover:border-gold-400/30 transition-luxury mt-8">
+                <Image 
+                  src="https://images.unsplash.com/photo-1560624052-449f5ddf0c31?q=80&w=400&auto=format&fit=crop" 
+                  alt="Ambiance 2" 
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  className="object-cover"
+                />
+              </div>
             </div>
 
             {/* Content Column */}
@@ -410,10 +433,18 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <img src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop" className="aspect-square object-cover border border-gold-400/10 rounded-sm filter brightness-90 hover:brightness-100 transition-luxury" alt="Gourmet dish" />
-            <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=400&auto=format&fit=crop" className="aspect-square object-cover border border-gold-400/10 rounded-sm filter brightness-90 hover:brightness-100 transition-luxury" alt="Ramen" />
-            <img src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=400&auto=format&fit=crop" className="aspect-square object-cover border border-gold-400/10 rounded-sm filter brightness-90 hover:brightness-100 transition-luxury" alt="Buffet setting" />
-            <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=400&auto=format&fit=crop" className="aspect-square object-cover border border-gold-400/10 rounded-sm filter brightness-90 hover:brightness-100 transition-luxury" alt="Desert plating" />
+            <div className="relative aspect-square border border-gold-400/10 rounded-sm overflow-hidden filter brightness-90 hover:brightness-100 transition-luxury">
+              <Image src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400&auto=format&fit=crop" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" alt="Gourmet dish" />
+            </div>
+            <div className="relative aspect-square border border-gold-400/10 rounded-sm overflow-hidden filter brightness-90 hover:brightness-100 transition-luxury">
+              <Image src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=400&auto=format&fit=crop" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" alt="Ramen" />
+            </div>
+            <div className="relative aspect-square border border-gold-400/10 rounded-sm overflow-hidden filter brightness-90 hover:brightness-100 transition-luxury">
+              <Image src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=400&auto=format&fit=crop" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" alt="Buffet setting" />
+            </div>
+            <div className="relative aspect-square border border-gold-400/10 rounded-sm overflow-hidden filter brightness-90 hover:brightness-100 transition-luxury">
+              <Image src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=400&auto=format&fit=crop" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" alt="Desert plating" />
+            </div>
           </div>
 
           {/* High-End Booking Banner CTA */}

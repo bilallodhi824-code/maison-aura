@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { Award, Compass, Heart, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Compass, ShieldCheck, HeartHandshake } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -35,11 +36,15 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="border border-gold-400/20 p-2.5 bg-dark-card rounded-sm">
-            <img 
-              src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop" 
-              alt="Plating design" 
-              className="w-full h-auto object-cover rounded-sm filter brightness-90 contrast-110"
-            />
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm">
+              <Image 
+                src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop" 
+                alt="Plating design" 
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover rounded-sm filter brightness-90 contrast-110"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -49,11 +54,15 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="border border-gold-400/20 p-2.5 bg-dark-base rounded-sm order-2 lg:order-1">
-              <img 
-                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop" 
-                alt="Chef in deep thoughts" 
-                className="w-full h-auto object-cover rounded-sm transition-luxury"
-              />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm">
+                <Image 
+                  src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop" 
+                  alt="Chef in deep thoughts" 
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover rounded-sm transition-luxury"
+                />
+              </div>
             </div>
             <div className="space-y-6 order-1 lg:order-2">
               <span className="text-gold-400 text-xs uppercase tracking-widest block font-semibold">The Maestro</span>

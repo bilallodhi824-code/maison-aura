@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, doc, collection, getDocs, setDoc, updateDoc, deleteDoc, addDoc, getDoc } from "firebase/firestore";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { getFirestore, doc, collection, getDocs, setDoc, updateDoc, deleteDoc, Firestore } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, User, Auth } from "firebase/auth";
+import { MenuItem, Reservation, BuffetPackage, Offer, ContactMessage, OrderInquiry, AdminUser } from "@/types";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -19,8 +20,8 @@ const isFirebaseConfigured =
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 let app;
-let db: any = null;
-let auth: any = null;
+let db: Firestore | null = null;
+let auth: Auth | null = null;
 
 if (isFirebaseConfigured) {
   try {
@@ -1426,7 +1427,7 @@ const DEFAULT_OFFERS = [
 ];
 
 // LocalStorage helpers to simulate databases
-const getLocalData = (key: string, defaults: any) => {
+const getLocalData = <T>(key: string, defaults: T): T => {
   if (typeof window === "undefined") return defaults;
   const stored = localStorage.getItem(key);
   if (!stored) {
@@ -1434,7 +1435,7 @@ const getLocalData = (key: string, defaults: any) => {
     return defaults;
   }
   try {
-    const parsed = JSON.parse(stored);
+    const parsed = JSON.parse(stored) as T;
     if (key === "local_menu_items" && Array.isArray(parsed) && parsed.length < 50) {
       localStorage.setItem(key, JSON.stringify(defaults));
       return defaults;
@@ -1445,7 +1446,7 @@ const getLocalData = (key: string, defaults: any) => {
   }
 };
 
-const setLocalData = (key: string, data: any) => {
+const setLocalData = <T>(key: string, data: T) => {
   if (typeof window !== "undefined") {
     localStorage.setItem(key, JSON.stringify(data));
   }
@@ -1456,7 +1457,7 @@ const setLocalData = (key: string, data: any) => {
 // -------------------------------------------------------------
 
 // Menu Items CRUD
-export async function getMenuItems(): Promise<any[]> {
+export async function getMenuItems(): Promise<MenuItem[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "menuItems"));
@@ -1465,18 +1466,18 @@ export async function getMenuItems(): Promise<any[]> {
         for (const item of DEFAULT_MENU_ITEMS) {
           await setDoc(doc(db, "menuItems", item.id), item);
         }
-        return DEFAULT_MENU_ITEMS;
+        return DEFAULT_MENU_ITEMS as MenuItem[];
       }
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as MenuItem[];
     } catch (e) {
       console.warn("Firestore fetch error, falling back to local:", e);
     }
   }
-  return getLocalData("local_menu_items", DEFAULT_MENU_ITEMS);
+  return getLocalData<MenuItem[]>("local_menu_items", DEFAULT_MENU_ITEMS as MenuItem[]);
 }
 
-export async function addMenuItem(item: any): Promise<boolean> {
-  const newItem = { ...item, id: item.id || `menu-${Date.now()}` };
+export async function addMenuItem(item: MenuItem): Promise<boolean> {
+  const newItem: MenuItem = { ...item, id: item.id || `menu-${Date.now()}` };
   if (db) {
     try {
       await setDoc(doc(db, "menuItems", newItem.id), newItem);
@@ -1485,23 +1486,23 @@ export async function addMenuItem(item: any): Promise<boolean> {
       console.error(e);
     }
   }
-  const items = getLocalData("local_menu_items", DEFAULT_MENU_ITEMS);
+  const items = getLocalData<MenuItem[]>("local_menu_items", DEFAULT_MENU_ITEMS as MenuItem[]);
   items.push(newItem);
   setLocalData("local_menu_items", items);
   return true;
 }
 
-export async function updateMenuItem(item: any): Promise<boolean> {
+export async function updateMenuItem(item: MenuItem): Promise<boolean> {
   if (db) {
     try {
-      await updateDoc(doc(db, "menuItems", item.id), item);
+      await updateDoc(doc(db, "menuItems", item.id), { ...item });
       return true;
     } catch (e) {
       console.error(e);
     }
   }
-  const items = getLocalData("local_menu_items", DEFAULT_MENU_ITEMS);
-  const idx = items.findIndex((i: any) => i.id === item.id);
+  const items = getLocalData<MenuItem[]>("local_menu_items", DEFAULT_MENU_ITEMS as MenuItem[]);
+  const idx = items.findIndex((i) => i.id === item.id);
   if (idx !== -1) {
     items[idx] = { ...items[idx], ...item };
     setLocalData("local_menu_items", items);
@@ -1518,23 +1519,23 @@ export async function deleteMenuItem(id: string): Promise<boolean> {
       console.error(e);
     }
   }
-  const items = getLocalData("local_menu_items", DEFAULT_MENU_ITEMS);
-  const filtered = items.filter((i: any) => i.id !== id);
+  const items = getLocalData<MenuItem[]>("local_menu_items", DEFAULT_MENU_ITEMS as MenuItem[]);
+  const filtered = items.filter((i) => i.id !== id);
   setLocalData("local_menu_items", filtered);
   return true;
 }
 
 // Reservations
-export async function getReservations(): Promise<any[]> {
+export async function getReservations(): Promise<Reservation[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "reservations"));
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as Reservation[];
     } catch (e) {
       console.warn(e);
     }
   }
-  return getLocalData("local_reservations", [
+  return getLocalData<Reservation[]>("local_reservations", [
     {
       id: "res-demo-1",
       name: "Marcus Aurelius",
@@ -1564,12 +1565,21 @@ export async function getReservations(): Promise<any[]> {
   ]);
 }
 
-export async function createReservation(res: any): Promise<any> {
-  const newRes = {
-    ...res,
+export async function createReservation(res: Partial<Reservation>): Promise<Reservation> {
+  const newRes: Reservation = {
     id: res.id || `res-${Date.now()}`,
-    status: "Pending",
-    createdAt: new Date().toISOString()
+    name: res.name || "",
+    email: res.email || "",
+    phone: res.phone || "",
+    date: res.date || "",
+    time: res.time || "19:30",
+    guestCount: res.guestCount || 2,
+    diningType: res.diningType || res.type || "Regular Dining",
+    notes: res.notes || "",
+    status: (res.status as "Confirmed" | "Cancelled" | "Pending") || "Pending",
+    createdAt: res.createdAt || new Date().toISOString(),
+    preorderItems: res.preorderItems || null,
+    preorderTotal: res.preorderTotal || null,
   };
   if (db) {
     try {
@@ -1579,7 +1589,7 @@ export async function createReservation(res: any): Promise<any> {
       console.error(e);
     }
   }
-  const reservations = getLocalData("local_reservations", []);
+  const reservations = getLocalData<Reservation[]>("local_reservations", []);
   reservations.push(newRes);
   setLocalData("local_reservations", reservations);
   return newRes;
@@ -1594,8 +1604,8 @@ export async function updateReservationStatus(id: string, status: "Confirmed" | 
       console.error(e);
     }
   }
-  const reservations = getLocalData("local_reservations", []);
-  const idx = reservations.findIndex((r: any) => r.id === id);
+  const reservations = getLocalData<Reservation[]>("local_reservations", []);
+  const idx = reservations.findIndex((r) => r.id === id);
   if (idx !== -1) {
     reservations[idx].status = status;
     setLocalData("local_reservations", reservations);
@@ -1604,7 +1614,7 @@ export async function updateReservationStatus(id: string, status: "Confirmed" | 
 }
 
 // Buffet Packages CRUD
-export async function getBuffetPackages(): Promise<any[]> {
+export async function getBuffetPackages(): Promise<BuffetPackage[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "buffetPackages"));
@@ -1612,17 +1622,17 @@ export async function getBuffetPackages(): Promise<any[]> {
         for (const item of DEFAULT_BUFFETS) {
           await setDoc(doc(db, "buffetPackages", item.id), item);
         }
-        return DEFAULT_BUFFETS;
+        return DEFAULT_BUFFETS as BuffetPackage[];
       }
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as BuffetPackage[];
     } catch (e) {
       console.warn(e);
     }
   }
-  return getLocalData("local_buffet_packages", DEFAULT_BUFFETS);
+  return getLocalData<BuffetPackage[]>("local_buffet_packages", DEFAULT_BUFFETS as BuffetPackage[]);
 }
 
-export async function updateBuffetPackage(pack: any): Promise<boolean> {
+export async function updateBuffetPackage(pack: BuffetPackage): Promise<boolean> {
   if (db) {
     try {
       await setDoc(doc(db, "buffetPackages", pack.id), pack);
@@ -1631,8 +1641,8 @@ export async function updateBuffetPackage(pack: any): Promise<boolean> {
       console.error(e);
     }
   }
-  const packs = getLocalData("local_buffet_packages", DEFAULT_BUFFETS);
-  const idx = packs.findIndex((p: any) => p.id === pack.id);
+  const packs = getLocalData<BuffetPackage[]>("local_buffet_packages", DEFAULT_BUFFETS as BuffetPackage[]);
+  const idx = packs.findIndex((p) => p.id === pack.id);
   if (idx !== -1) {
     packs[idx] = { ...packs[idx], ...pack };
   } else {
@@ -1651,29 +1661,29 @@ export async function deleteBuffetPackage(id: string): Promise<boolean> {
       console.error(e);
     }
   }
-  const packs = getLocalData("local_buffet_packages", DEFAULT_BUFFETS);
-  const filtered = packs.filter((p: any) => p.id !== id);
+  const packs = getLocalData<BuffetPackage[]>("local_buffet_packages", DEFAULT_BUFFETS as BuffetPackage[]);
+  const filtered = packs.filter((p) => p.id !== id);
   setLocalData("local_buffet_packages", filtered);
   return true;
 }
 
 // Platters CRUD
-export async function getPlatters(): Promise<any[]> {
+export async function getPlatters(): Promise<MenuItem[]> {
   const items = await getMenuItems();
   return items.filter(i => i.platterAvailabilityFlag || i.category === "Platters" || i.tags?.includes("platter"));
 }
 
 // Contact messages
-export async function getContactMessages(): Promise<any[]> {
+export async function getContactMessages(): Promise<ContactMessage[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "contactMessages"));
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as ContactMessage[];
     } catch (e) {
       console.warn(e);
     }
   }
-  return getLocalData("local_messages", [
+  return getLocalData<ContactMessage[]>("local_messages", [
     {
       id: "msg-demo-1",
       name: "Arthur Pendragon",
@@ -1685,8 +1695,8 @@ export async function getContactMessages(): Promise<any[]> {
   ]);
 }
 
-export async function submitContactMessage(msg: any): Promise<boolean> {
-  const newMsg = {
+export async function submitContactMessage(msg: Omit<ContactMessage, "id" | "createdAt">): Promise<boolean> {
+  const newMsg: ContactMessage = {
     ...msg,
     id: `msg-${Date.now()}`,
     createdAt: new Date().toISOString()
@@ -1699,23 +1709,23 @@ export async function submitContactMessage(msg: any): Promise<boolean> {
       console.error(e);
     }
   }
-  const msgs = getLocalData("local_messages", []);
+  const msgs = getLocalData<ContactMessage[]>("local_messages", []);
   msgs.push(newMsg);
   setLocalData("local_messages", msgs);
   return true;
 }
 
 // Order Inquiries
-export async function getOrderInquiries(): Promise<any[]> {
+export async function getOrderInquiries(): Promise<OrderInquiry[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "orders"));
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as OrderInquiry[];
     } catch (e) {
       console.warn(e);
     }
   }
-  return getLocalData("local_orders", [
+  return getLocalData<OrderInquiry[]>("local_orders", [
     {
       id: "ord-demo-1",
       name: "Chef Gordon",
@@ -1733,12 +1743,18 @@ export async function getOrderInquiries(): Promise<any[]> {
   ]);
 }
 
-export async function createOrderInquiry(order: any): Promise<boolean> {
-  const newOrder = {
-    ...order,
-    id: `ord-${Date.now()}`,
-    status: "Pending",
-    createdAt: new Date().toISOString()
+export async function createOrderInquiry(order: Partial<OrderInquiry>): Promise<boolean> {
+  const newOrder: OrderInquiry = {
+    id: order.id || `ord-${Date.now()}`,
+    name: order.name || "",
+    email: order.email || "",
+    phone: order.phone || "",
+    type: order.type || "Takeaway",
+    items: order.items || [],
+    total: order.total || 0,
+    status: order.status || "Pending",
+    createdAt: order.createdAt || new Date().toISOString(),
+    reservationId: order.reservationId,
   };
   if (db) {
     try {
@@ -1748,7 +1764,7 @@ export async function createOrderInquiry(order: any): Promise<boolean> {
       console.error(e);
     }
   }
-  const orders = getLocalData("local_orders", []);
+  const orders = getLocalData<OrderInquiry[]>("local_orders", []);
   orders.push(newOrder);
   setLocalData("local_orders", orders);
   return true;
@@ -1763,8 +1779,8 @@ export async function updateOrderStatus(id: string, status: string): Promise<boo
       console.error(e);
     }
   }
-  const orders = getLocalData("local_orders", []);
-  const idx = orders.findIndex((o: any) => o.id === id);
+  const orders = getLocalData<OrderInquiry[]>("local_orders", []);
+  const idx = orders.findIndex((o) => o.id === id);
   if (idx !== -1) {
     orders[idx].status = status;
     setLocalData("local_orders", orders);
@@ -1773,7 +1789,7 @@ export async function updateOrderStatus(id: string, status: string): Promise<boo
 }
 
 // Offers & Specials CRUD
-export async function getOffers(): Promise<any[]> {
+export async function getOffers(): Promise<Offer[]> {
   if (db) {
     try {
       const snap = await getDocs(collection(db, "offers"));
@@ -1781,17 +1797,17 @@ export async function getOffers(): Promise<any[]> {
         for (const item of DEFAULT_OFFERS) {
           await setDoc(doc(db, "offers", item.id), item);
         }
-        return DEFAULT_OFFERS;
+        return DEFAULT_OFFERS as Offer[];
       }
-      return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      return snap.docs.map(d => ({ ...d.data(), id: d.id })) as Offer[];
     } catch (e) {
       console.warn(e);
     }
   }
-  return getLocalData("local_offers", DEFAULT_OFFERS);
+  return getLocalData<Offer[]>("local_offers", DEFAULT_OFFERS as Offer[]);
 }
 
-export async function updateOffer(offer: any): Promise<boolean> {
+export async function updateOffer(offer: Offer): Promise<boolean> {
   if (db) {
     try {
       await setDoc(doc(db, "offers", offer.id), offer);
@@ -1800,8 +1816,8 @@ export async function updateOffer(offer: any): Promise<boolean> {
       console.error(e);
     }
   }
-  const offers = getLocalData("local_offers", DEFAULT_OFFERS);
-  const idx = offers.findIndex((o: any) => o.id === offer.id);
+  const offers = getLocalData<Offer[]>("local_offers", DEFAULT_OFFERS as Offer[]);
+  const idx = offers.findIndex((o) => o.id === offer.id);
   if (idx !== -1) {
     offers[idx] = { ...offers[idx], ...offer };
   } else {
@@ -1820,8 +1836,8 @@ export async function deleteOffer(id: string): Promise<boolean> {
       console.error(e);
     }
   }
-  const offers = getLocalData("local_offers", DEFAULT_OFFERS);
-  const filtered = offers.filter((o: any) => o.id !== id);
+  const offers = getLocalData<Offer[]>("local_offers", DEFAULT_OFFERS as Offer[]);
+  const filtered = offers.filter((o) => o.id !== id);
   setLocalData("local_offers", filtered);
   return true;
 }
@@ -1834,7 +1850,7 @@ export function getAuthInstance() {
   return auth;
 }
 
-export function subscribeToAuth(callback: (user: User | null | any) => void) {
+export function subscribeToAuth(callback: (user: AdminUser | User | null) => void) {
   if (auth) {
     return onAuthStateChanged(auth, callback);
   }
@@ -1844,7 +1860,11 @@ export function subscribeToAuth(callback: (user: User | null | any) => void) {
     const checkUser = () => {
       const stored = localStorage.getItem("admin_user");
       if (stored) {
-        callback(JSON.parse(stored));
+        try {
+          callback(JSON.parse(stored) as AdminUser);
+        } catch {
+          callback(null);
+        }
       } else {
         callback(null);
       }
@@ -1868,7 +1888,7 @@ export async function adminLogin(email: string, password: string): Promise<boole
   }
   // Hardcoded luxury admin fallback
   if (email === "admin@maisonaura.com" && password === "aura123") {
-    const mockUser = { email, uid: "mock-admin-uid", role: "Super Admin", displayName: "Maitre D'" };
+    const mockUser: AdminUser = { email, uid: "mock-admin-uid", role: "Super Admin", displayName: "Maitre D'" };
     if (typeof window !== "undefined") {
       localStorage.setItem("admin_user", JSON.stringify(mockUser));
       window.dispatchEvent(new Event("storage"));

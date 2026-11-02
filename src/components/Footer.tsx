@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { submitContactMessage } from "@/lib/firebase";
-import { Clock, Phone, Mail, MapPin, Award, ArrowUp } from "lucide-react";
+import { Phone, Mail, MapPin, Award, ArrowUp } from "lucide-react";
 
 export default function Footer() {
   const [email, setEmail] = useState("");

@@ -2,15 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { subscribeToAuth, adminLogout } from "@/lib/firebase";
+import { CartItem, AdminUser } from "@/types";
 
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  image?: string;
-  category?: string;
-}
+export type { CartItem };
 
 interface AppContextType {
   cart: CartItem[];
@@ -20,7 +14,7 @@ interface AppContextType {
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
-  adminUser: any;
+  adminUser: AdminUser | null;
   loadingAuth: boolean;
   logout: () => Promise<void>;
 }
@@ -29,21 +23,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  // Sync cart from LocalStorage on mount
+  // Sync cart from LocalStorage on mount without triggering synchronous cascading renders
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem("aura_cart");
-      if (savedCart) {
-        try {
+    const frame = requestAnimationFrame(() => {
+      try {
+        const savedCart = localStorage.getItem("aura_cart");
+        if (savedCart) {
           setCart(JSON.parse(savedCart));
-        } catch (e) {
-          console.error("Failed to parse cart data", e);
         }
+      } catch (e) {
+        console.error("Failed to parse cart data", e);
       }
-    }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Save cart to LocalStorage when changed
@@ -89,7 +84,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Subscribe to Auth changes
   useEffect(() => {
     const unsubscribe = subscribeToAuth((user) => {
-      setAdminUser(user);
+      if (user) {
+        setAdminUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "Ambassador",
+          role: "role" in user && typeof user.role === "string" ? user.role : "Super Admin",
+        });
+      } else {
+        setAdminUser(null);
+      }
       setLoadingAuth(false);
     });
     return () => unsubscribe();

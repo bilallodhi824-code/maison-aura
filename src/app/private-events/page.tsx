@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createReservation } from "@/lib/firebase";
-import { CheckCircle2, Clock, Calendar, Users, Award } from "lucide-react";
+import { CheckCircle2, Clock, Users } from "lucide-react";
 
 export default function PrivateEventsPage() {
   const [formData, setFormData] = useState({
@@ -84,7 +85,7 @@ export default function PrivateEventsPage() {
           ].map((item, idx) => (
             <div key={idx} className="bg-dark-card border border-gold-400/10 rounded-sm overflow-hidden flex flex-col group hover:border-gold-400 transition-luxury">
               <div className="relative h-48 overflow-hidden">
-                <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700 filter brightness-95" />
+                <Image src={item.img} alt={item.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700 filter brightness-95" />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark-card to-transparent" />
               </div>
               <div className="p-6 space-y-3">
@@ -195,6 +196,7 @@ export default function PrivateEventsPage() {
                       <input
                         type="date"
                         required
+                        min={new Date().toISOString().split("T")[0]}
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         className="w-full bg-dark-base border border-gold-400/20 focus:border-gold-400 outline-none px-4 py-3 text-xs text-[#FAF9F6] transition-luxury"

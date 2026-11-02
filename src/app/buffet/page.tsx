@@ -2,14 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getBuffetPackages, getMenuItems } from "@/lib/firebase";
-import { Clock, Calendar, ShieldAlert, Award, Star } from "lucide-react";
+import { Clock, Award, Star } from "lucide-react";
+import { BuffetPackage, MenuItem } from "@/types";
 
 export default function BuffetPage() {
-  const [packages, setPackages] = useState<any[]>([]);
-  const [buffetDishes, setBuffetDishes] = useState<any[]>([]);
+  const [packages, setPackages] = useState<BuffetPackage[]>([]);
+  const [buffetDishes, setBuffetDishes] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,10 +64,12 @@ export default function BuffetPage() {
                   <div>
                     {pack.image && (
                       <div className="relative h-48 overflow-hidden">
-                        <img
+                        <Image
                           src={pack.image}
                           alt={pack.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700"
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-luxury duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-dark-card to-transparent" />
                       </div>
@@ -124,7 +128,9 @@ export default function BuffetPage() {
                 {buffetDishes.slice(0, 8).map((dish) => (
                   <div key={dish.id} className="bg-dark-base border border-gold-400/5 hover:border-gold-400/20 p-4 rounded transition-luxury flex items-center gap-4">
                     {dish.image && (
-                      <img src={dish.image} alt={dish.name} className="w-16 h-16 object-cover border border-gold-400/10 rounded" />
+                      <div className="relative w-16 h-16 shrink-0 overflow-hidden rounded border border-gold-400/10">
+                        <Image src={dish.image} alt={dish.name} fill sizes="64px" className="object-cover" />
+                      </div>
                     )}
                     <div>
                       <h4 className="font-serif text-sm font-semibold text-gold-400 leading-tight">{dish.name}</h4>

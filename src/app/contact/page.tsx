@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { submitContactMessage } from "@/lib/firebase";
-import { Mail, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react";
+import { Mail, Phone, MapPin, CheckCircle2 } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

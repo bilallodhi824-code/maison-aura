@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -62,10 +63,12 @@ export default function GalleryPage() {
               key={idx}
               className="group relative aspect-square overflow-hidden border border-gold-400/10 rounded-sm hover:border-gold-400 transition-luxury cursor-pointer"
             >
-              <img
+              <Image
                 src={item.img}
                 alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700 filter brightness-90 group-hover:brightness-100"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover group-hover:scale-105 transition-luxury duration-700 filter brightness-90 group-hover:brightness-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-base via-dark-base/40 to-transparent opacity-0 group-hover:opacity-100 transition-luxury" />
               <div className="absolute bottom-4 left-4 right-4 text-center opacity-0 group-hover:opacity-100 transition-luxury space-y-1">

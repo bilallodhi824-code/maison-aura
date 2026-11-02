@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { ShoppingBag, Menu, X, Trash2, Calendar, Phone, Clock, MapPin } from "lucide-react";
+import { ShoppingBag, Menu, X, Trash2, Calendar } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { cart, removeFromCart, updateQty, cartTotal, cartCount } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -27,7 +29,7 @@ export default function Navbar() {
   const handleCheckout = () => {
     // Navigate to Reservation/Checkout with order notes
     setCartOpen(false);
-    window.location.href = `/reserve?preorder=true`;
+    router.push(`/reserve?preorder=true`);
   };
 
   return (
@@ -177,11 +179,15 @@ export default function Navbar() {
                   cart.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 pb-6 border-b border-gold-400/10">
                       {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover border border-gold-400/20 rounded"
-                        />
+                        <div className="relative w-16 h-16 shrink-0 overflow-hidden rounded border border-gold-400/20">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        </div>
                       )}
                       <div className="flex-1">
                         <h4 className="font-serif text-sm font-medium text-gold-400 tracking-wide">{item.name}</h4>

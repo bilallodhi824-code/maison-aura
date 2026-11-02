@@ -5,27 +5,27 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
 
-  --color-gold-50: #FBF8F6;
-  --color-gold-100: #F7ECE9;
-  --color-gold-200: #ECD5CE;
-  --color-gold-300: #E0B2A6;
-  --color-gold-400: #C87A6F; /* Elegant Terracotta / Rust Rose */
-  --color-gold-500: #B5655B;
-  --color-gold-600: #9F5148;
-  --color-gold-700: #863D36;
-  --color-gold-800: #6E2E28;
-  --color-gold-900: #4B1F1B;
+  --color-gold-50: #FCFAF2;
+  --color-gold-100: #F6F1DF;
+  --color-gold-200: #EDE1BA;
+  --color-gold-300: #E2CF8F;
+  --color-gold-400: #D4AF37; /* Authentic Royal Champagne Gold */
+  --color-gold-500: #BF9B27;
+  --color-gold-600: #9E7F1A;
+  --color-gold-700: #7C6313;
+  --color-gold-800: #57450B;
+  --color-gold-900: #382C05;
   
-  --color-dark-base: #EFECE6;  /* Elegant Warm Sand base */
-  --color-dark-card: #FAF7F2;  /* Light Warm Alabaster Card background */
-  --color-dark-accent: #E4DFD5; /* Muted Warm Gray/Stone */
-  --color-walnut: #D0C9BD;      /* Warm Earthy Gray divider */
+  --color-dark-base: #0B0B0B;  /* Deep Luxury Obsidian Noir */
+  --color-dark-card: #141414;  /* Rich Velvet Charcoal Card */
+  --color-dark-accent: #1C1C1C; /* Elevated Surface / Border */
+  --color-walnut: #28241E;      /* Warm Deep Walnut divider */
 }
 
 @layer base {
   body {
-    background-color: #EFECE6;
-    color: #1F2633; /* Rich Charcoal Indigo */
+    background-color: #0B0B0B;
+    color: #FAF9F6; /* Pearl Ivory */
     font-family: var(--font-sans);
   }
   
@@ -33,43 +33,27 @@
     font-family: var(--font-serif);
     letter-spacing: 0.05em;
   }
-
-  /* Global light mode text contrast overrides */
-  .text-white, .text-\[\#FAF9F6\] {
-    color: #1F2633 !important;
-  }
-  
-  .text-gray-300 {
-    color: #4A5260 !important;
-  }
-  
-  .text-gray-400 {
-    color: #5D6675 !important;
-  }
-  
-  .text-gray-500 {
-    color: #727D8F !important;
-  }
 }
 
 /* Glassmorphism custom components */
 .glass-panel {
-  background: rgba(250, 247, 242, 0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(200, 122, 111, 0.15);
+  background: rgba(18, 18, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.18);
 }
 
 .gold-glow {
-  text-shadow: 0 0 10px rgba(200, 122, 111, 0.15);
+  text-shadow: 0 0 14px rgba(212, 175, 55, 0.35);
 }
 
 .gold-border-glow {
-  box-shadow: 0 10px 30px rgba(200, 122, 111, 0.06);
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.12);
 }
 
 /* Custom premium transitions */
 .transition-luxury {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Custom scrollbar */
@@ -77,12 +61,13 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #EFECE6;
+  background: #0B0B0B;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D0C9BD;
+  background: #28241E;
   border-radius: 3px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C87A6F;
+  background: #D4AF37;
 }

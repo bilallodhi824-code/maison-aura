@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getPlatters } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
 import { Users, Info, Plus } from "lucide-react";
+import { MenuItem } from "@/types";
 
 export default function PlattersPage() {
   const { addToCart } = useApp();
-  const [platters, setPlatters] = useState<any[]>([]);
+  const [platters, setPlatters] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,10 +58,12 @@ export default function PlattersPage() {
               >
                 <div>
                   <div className="relative aspect-video overflow-hidden border-b border-gold-400/10">
-                    <img
+                    <Image
                       src={platter.image}
                       alt={platter.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover group-hover:scale-105 transition-luxury duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-card to-transparent" />
                     

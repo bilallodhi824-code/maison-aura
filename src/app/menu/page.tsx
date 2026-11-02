@@ -1,33 +1,35 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getMenuItems, DEFAULT_MENU_ITEMS } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
 import { Search, Flame, Award, HelpCircle } from "lucide-react";
+import { MenuItem } from "@/types";
 
 function MenuContent() {
   const searchParams = useSearchParams();
   const catParam = searchParams.get("cat");
 
   const { addToCart } = useApp();
-  const [items, setItems] = useState<any[]>(DEFAULT_MENU_ITEMS);
-  const [filteredItems, setFilteredItems] = useState<any[]>(DEFAULT_MENU_ITEMS);
-  const [categories, setCategories] = useState<string[]>(["All", ...Array.from(new Set(DEFAULT_MENU_ITEMS.map((i: any) => i.category)))]);
+  const [items, setItems] = useState<MenuItem[]>(DEFAULT_MENU_ITEMS as MenuItem[]);
+  const [categories, setCategories] = useState<string[]>(["All", ...Array.from(new Set(DEFAULT_MENU_ITEMS.map((i) => i.category)))]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadMenu() {
+      setLoading(true);
       try {
         const menu = await getMenuItems();
         setItems(menu);
         
         // Extract unique categories
-        const cats = ["All", ...Array.from(new Set(menu.map((i: any) => i.category)))];
+        const cats = ["All", ...Array.from(new Set(menu.map((i) => i.category)))];
         setCategories(cats);
 
         // Check query param
@@ -36,30 +38,33 @@ function MenuContent() {
         }
       } catch (err) {
         console.error("Failed to load menu items", err);
+      } finally {
+        setLoading(false);
       }
     }
     loadMenu();
   }, [catParam]);
 
-  // Apply filters
-  useEffect(() => {
+  // Apply filters via memoized computation (no cascading render warnings)
+  const filteredItems = useMemo(() => {
     let result = items;
 
     if (activeCategory !== "All") {
-      result = result.filter(item => item.category === activeCategory);
+      result = result.filter((item) => item.category === activeCategory);
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
-        item => 
+        (item) => 
           item.name.toLowerCase().includes(query) || 
-          item.shortDescription.toLowerCase().includes(query)
+          item.shortDescription.toLowerCase().includes(query) ||
+          item.category.toLowerCase().includes(query)
       );
     }
 
-    setFilteredItems(result);
-  }, [activeCategory, searchQuery, items]);
+    return result;
+  }, [items, activeCategory, searchQuery]);
 
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 space-y-12">
@@ -123,11 +128,12 @@ function MenuContent() {
                 className="group bg-dark-card border border-gold-400/10 rounded-sm overflow-hidden flex flex-col justify-between hover:border-gold-400/25 transition-luxury hover:shadow-2xl"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
+                  <Image
                     src={item.image}
                     alt={item.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-luxury duration-700"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-luxury duration-700"
                   />
                   {/* Badge Row */}
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

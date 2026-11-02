@@ -5,11 +5,13 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getOffers } from "@/lib/firebase";
-import { Tag, Sparkles, Award } from "lucide-react";
+import { Sparkles, Copy, Check } from "lucide-react";
+import { Offer } from "@/types";
 
 export default function OffersPage() {
-  const [offers, setOffers] = useState<any[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadOffers() {
@@ -25,6 +27,12 @@ export default function OffersPage() {
     }
     loadOffers();
   }, []);
+
+  const handleCopy = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2500);
+  };
 
   return (
     <div className="min-h-screen bg-dark-base flex flex-col">
@@ -48,38 +56,46 @@ export default function OffersPage() {
       ) : (
         <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {offers.map((offer) => (
-              <div
-                key={offer.id}
-                className="glass-panel border border-gold-400/15 p-8 rounded-sm flex flex-col justify-between hover:border-gold-400 transition-luxury space-y-6"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-gold-400/10 text-gold-400 border border-gold-400/20 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
-                      {offer.tag || "Special Promotion"}
-                    </span>
+            {offers.map((offer) => {
+              const isCopied = copiedCode === offer.code;
+              return (
+                <div
+                  key={offer.id}
+                  className="glass-panel border border-gold-400/15 p-8 rounded-sm flex flex-col justify-between hover:border-gold-400 transition-luxury space-y-6"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-gold-400/10 text-gold-400 border border-gold-400/20 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                        {offer.tag || "Special Promotion"}
+                      </span>
+                    </div>
+
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-gold-400 tracking-wide">{offer.title}</h3>
+                    <p className="text-xs text-gray-400 leading-relaxed font-light">{offer.description}</p>
                   </div>
 
-                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-gold-400 tracking-wide">{offer.title}</h3>
-                  <p className="text-xs text-gray-400 leading-relaxed font-light">{offer.description}</p>
-                </div>
-
-                <div className="flex items-center justify-between gap-4 pt-4 border-t border-gold-400/10">
-                  <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-widest text-gray-500 block">Invitation Code:</span>
-                    <span className="font-mono text-xs font-semibold text-[#FAF9F6] bg-dark-base border border-gold-400/15 px-2.5 py-1 tracking-widest">
-                      {offer.code || "NOCODE"}
-                    </span>
+                  <div className="flex items-center justify-between gap-4 pt-4 border-t border-gold-400/10">
+                    <div className="space-y-1">
+                      <span className="text-[9px] uppercase tracking-widest text-gray-500 block">Invitation Code:</span>
+                      <button
+                        onClick={() => handleCopy(offer.code)}
+                        className="font-mono text-xs font-semibold text-[#FAF9F6] bg-dark-base border border-gold-400/15 hover:border-gold-400/50 px-2.5 py-1 tracking-widest flex items-center gap-1.5 transition-luxury cursor-pointer"
+                        title="Click to copy code"
+                      >
+                        <span>{offer.code || "NOCODE"}</span>
+                        {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-gold-400" />}
+                      </button>
+                    </div>
+                    <Link
+                      href="/reserve"
+                      className="px-6 py-2.5 bg-gold-400 text-dark-base hover:bg-transparent hover:text-gold-400 border border-gold-400 text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer"
+                    >
+                      Claim Slot
+                    </Link>
                   </div>
-                  <Link
-                    href="/reserve"
-                    className="px-6 py-2.5 bg-gold-400 text-dark-base hover:bg-transparent hover:text-gold-400 border border-gold-400 text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer"
-                  >
-                    Claim Slot
-                  </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Loyalty Section */}
