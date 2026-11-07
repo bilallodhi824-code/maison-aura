@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getMenuItems, getBuffetPackages } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
-import { ChevronRight, Award, ArrowRight, Quote } from "lucide-react";
+import { ChevronRight, Award, ArrowRight, Quote, Check } from "lucide-react";
 import { MenuItem, BuffetPackage } from "@/types";
 
 export default function HomePage() {
@@ -15,6 +15,15 @@ export default function HomePage() {
   const [specials, setSpecials] = useState<MenuItem[]>([]);
   const [buffets, setBuffets] = useState<BuffetPackage[]>([]);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [addedId, setAddedId] = useState<string | null>(null);
+
+  const handleAddToCart = (dish: MenuItem) => {
+    addToCart(dish);
+    setAddedId(dish.id);
+    setTimeout(() => {
+      setAddedId((curr) => (curr === dish.id ? null : curr));
+    }, 1500);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -258,10 +267,20 @@ export default function HomePage() {
                   </div>
 
                   <button
-                    onClick={() => addToCart(dish)}
-                    className="w-full py-2 bg-transparent hover:bg-gold-400 border border-gold-400/30 hover:border-gold-400 text-gold-400 hover:text-dark-base text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer"
+                    onClick={() => handleAddToCart(dish)}
+                    className={`w-full py-2.5 border text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer flex items-center justify-center gap-1.5 ${
+                      addedId === dish.id
+                        ? "bg-gold-400 border-gold-400 text-dark-base font-extrabold"
+                        : "bg-transparent hover:bg-gold-400 border-gold-400/30 hover:border-gold-400 text-gold-400 hover:text-dark-base"
+                    }`}
                   >
-                    Add to Selection
+                    {addedId === dish.id ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" /> Added to Selection ✓
+                      </>
+                    ) : (
+                      "Add to Selection"
+                    )}
                   </button>
                 </div>
               </div>

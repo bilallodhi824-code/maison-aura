@@ -28,6 +28,7 @@ function ReservationContent() {
     notes: packageParam ? `Interested in buffet package: ${packageParam}. ` : "",
   }));
 
+  const [attachPreorder, setAttachPreorder] = useState(() => preorderParam === "true" || cart.length > 0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [bookingId, setBookingId] = useState("");
@@ -37,7 +38,7 @@ function ReservationContent() {
     setLoading(true);
     try {
       // Check if we are attaching a pre-order
-      const hasPreorder = preorderParam === "true" && cart.length > 0;
+      const hasPreorder = attachPreorder && cart.length > 0;
       
       const reservationPayload = {
         ...formData,
@@ -207,6 +208,27 @@ function ReservationContent() {
                 />
               </div>
 
+              {cart.length > 0 && (
+                <div className="p-4 bg-dark-base border border-gold-400/20 rounded-sm flex items-center justify-between gap-4">
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={attachPreorder}
+                      onChange={(e) => setAttachPreorder(e.target.checked)}
+                      className="w-4 h-4 accent-[#D4AF37] cursor-pointer"
+                    />
+                    <span className="text-xs text-[#FAF9F6] font-light">
+                      Attach your Pre-Order ({cart.length} item{cart.length > 1 ? "s" : ""} • ${cartTotal}) to this booking
+                    </span>
+                  </label>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shrink-0 ${
+                    attachPreorder ? "bg-gold-400 text-dark-base" : "bg-dark-card text-gray-500 border border-gold-400/10"
+                  }`}>
+                    {attachPreorder ? "Attached" : "Optional"}
+                  </span>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -219,14 +241,21 @@ function ReservationContent() {
 
           {/* Details Sidebar */}
           <div className="space-y-6">
-            {preorderParam === "true" && cart.length > 0 && (
-              <div className="glass-panel border border-gold-400/10 p-6 rounded-sm space-y-4">
-                <h3 className="font-serif text-sm font-semibold text-gold-400 uppercase tracking-wider flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4" /> Attached Pre-Order
-                </h3>
+            {cart.length > 0 && (
+              <div className="glass-panel border border-gold-400/15 p-6 rounded-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-serif text-sm font-semibold text-gold-400 uppercase tracking-wider flex items-center gap-2">
+                    <ShoppingBag className="w-4 h-4" /> Selected Pre-Order
+                  </h3>
+                  <span className={`text-[9px] px-2 py-0.5 rounded-sm font-bold uppercase tracking-wider ${
+                    attachPreorder ? "bg-gold-400 text-dark-base" : "bg-dark-base text-gray-400 border border-gold-400/20"
+                  }`}>
+                    {attachPreorder ? "Linked" : "Unlinked"}
+                  </span>
+                </div>
                 <div className="space-y-2 border-b border-gold-400/10 pb-4 max-h-[220px] overflow-y-auto">
                   {cart.map((i) => (
-                    <div key={i.id} className="flex justify-between items-center text-xs text-gray-400">
+                    <div key={i.id} className="flex justify-between items-center text-xs text-gray-300">
                       <span>{i.name} (x{i.qty})</span>
                       <span className="font-serif font-medium text-gold-400">${i.price * i.qty}</span>
                     </div>
@@ -234,8 +263,15 @@ function ReservationContent() {
                 </div>
                 <div className="flex justify-between items-center text-xs font-semibold">
                   <span className="text-gray-400">Preorder Valuation:</span>
-                  <span className="font-serif text-gold-400">${cartTotal}</span>
+                  <span className="font-serif text-gold-400 text-sm">${cartTotal}</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setAttachPreorder(!attachPreorder)}
+                  className="w-full py-2 bg-dark-base hover:bg-gold-400/10 border border-gold-400/20 text-[10px] uppercase tracking-widest text-gold-400 transition-luxury rounded-sm cursor-pointer"
+                >
+                  {attachPreorder ? "Do not attach to this booking" : "Link pre-order to this booking"}
+                </button>
               </div>
             )}
 

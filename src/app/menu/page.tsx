@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getMenuItems, DEFAULT_MENU_ITEMS } from "@/lib/firebase";
 import { useApp } from "@/context/AppContext";
-import { Search, Flame, Award, HelpCircle } from "lucide-react";
+import { Search, Flame, Award, HelpCircle, X, Check, Eye } from "lucide-react";
 import { MenuItem } from "@/types";
 
 function MenuContent() {
@@ -20,6 +20,17 @@ function MenuContent() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+  const [addedId, setAddedId] = useState<string | null>(null);
+
+  const handleAddToCart = (e: React.MouseEvent, item: MenuItem) => {
+    e.stopPropagation();
+    addToCart(item);
+    setAddedId(item.id);
+    setTimeout(() => {
+      setAddedId((curr) => (curr === item.id ? null : curr));
+    }, 1500);
+  };
 
   useEffect(() => {
     async function loadMenu() {
@@ -122,10 +133,12 @@ function MenuContent() {
           {filteredItems.map((item) => {
             const isChefSpecial = item.tags?.includes("chef special");
             const isSpicy = item.tags?.includes("spicy");
+            const isAdded = addedId === item.id;
             return (
               <div
                 key={item.id}
-                className="group bg-dark-card border border-gold-400/10 rounded-sm overflow-hidden flex flex-col justify-between hover:border-gold-400/25 transition-luxury hover:shadow-2xl"
+                onClick={() => setSelectedDish(item)}
+                className="group bg-dark-card border border-gold-400/10 rounded-sm overflow-hidden flex flex-col justify-between hover:border-gold-400/30 transition-luxury hover:shadow-2xl cursor-pointer"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
@@ -148,6 +161,13 @@ function MenuContent() {
                       </span>
                     )}
                   </div>
+
+                  {/* View Details Hover Overlay */}
+                  <div className="absolute inset-0 bg-dark-base/40 opacity-0 group-hover:opacity-100 transition-luxury flex items-center justify-center pointer-events-none">
+                    <span className="bg-dark-base/90 border border-gold-400/40 text-gold-400 text-[10px] uppercase tracking-widest px-3 py-1.5 flex items-center gap-1.5 rounded-sm shadow">
+                      <Eye className="w-3.5 h-3.5" /> Inspect Dish
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
@@ -165,16 +185,141 @@ function MenuContent() {
 
                   <div className="pt-2">
                     <button
-                      onClick={() => addToCart(item)}
-                      className="w-full py-2 bg-transparent hover:bg-gold-400 border border-gold-400/30 hover:border-gold-400 text-gold-400 hover:text-dark-base text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer"
+                      onClick={(e) => handleAddToCart(e, item)}
+                      className={`w-full py-2.5 border text-[10px] font-bold uppercase tracking-widest transition-luxury cursor-pointer flex items-center justify-center gap-1.5 ${
+                        isAdded
+                          ? "bg-gold-400 border-gold-400 text-dark-base font-extrabold"
+                          : "bg-transparent hover:bg-gold-400 border-gold-400/30 hover:border-gold-400 text-gold-400 hover:text-dark-base"
+                      }`}
                     >
-                      Select to Pre-Order
+                      {isAdded ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" /> Added to Selection ✓
+                        </>
+                      ) : (
+                        "Select to Pre-Order"
+                      )}
                     </button>
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Dish Inspection Modal */}
+      {selectedDish && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+          onClick={() => setSelectedDish(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-dark-card border border-gold-400/30 rounded-sm overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedDish(null)}
+              className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-dark-base/80 border border-gold-400/30 text-gold-400 hover:text-[#FAF9F6] hover:border-gold-400 flex items-center justify-center transition-luxury cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Dish Image Header */}
+            <div className="relative aspect-video w-full overflow-hidden border-b border-gold-400/15">
+              <Image
+                src={selectedDish.image}
+                alt={selectedDish.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 672px"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
+
+              {/* Tags */}
+              <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
+                <span className="bg-gold-400 text-dark-base text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm shadow">
+                  {selectedDish.category}
+                </span>
+                {selectedDish.tags?.includes("chef special") && (
+                  <span className="bg-gold-500 text-dark-base text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 flex items-center gap-1 rounded-sm shadow">
+                    <Award className="w-3.5 h-3.5" /> Chef Special
+                  </span>
+                )}
+                {selectedDish.tags?.includes("spicy") && (
+                  <span className="bg-red-500 text-white text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 flex items-center gap-1 rounded-sm shadow">
+                    <Flame className="w-3.5 h-3.5" /> Spicy
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gold-400 tracking-wide">
+                    {selectedDish.name}
+                  </h2>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">
+                    Haute Gastronomie Selection
+                  </p>
+                </div>
+                <span className="font-serif text-2xl sm:text-3xl font-bold text-gold-400 shrink-0">
+                  ${selectedDish.price}
+                </span>
+              </div>
+
+              <p className="text-sm text-gray-300 leading-relaxed font-light">
+                {selectedDish.longDescription || selectedDish.shortDescription}
+              </p>
+
+              {selectedDish.ingredients && selectedDish.ingredients.length > 0 && (
+                <div className="space-y-2 border-t border-gold-400/10 pt-4">
+                  <h4 className="text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
+                    Curated Elements &amp; Ingredients
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDish.ingredients.map((ing, i) => (
+                      <span
+                        key={i}
+                        className="text-xs text-gray-300 bg-dark-base px-2.5 py-1 border border-gold-400/15 rounded-sm"
+                      >
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={(e) => handleAddToCart(e, selectedDish)}
+                  className={`flex-1 py-3.5 border text-xs font-bold uppercase tracking-widest transition-luxury cursor-pointer flex items-center justify-center gap-2 ${
+                    addedId === selectedDish.id
+                      ? "bg-gold-400 border-gold-400 text-dark-base font-extrabold"
+                      : "bg-gold-400 hover:bg-transparent text-dark-base hover:text-gold-400 border-gold-400"
+                  }`}
+                >
+                  {addedId === selectedDish.id ? (
+                    <>
+                      <Check className="w-4 h-4" /> Added to Pre-Order Selection ✓
+                    </>
+                  ) : (
+                    "Add to Pre-Order Selection"
+                  )}
+                </button>
+                <button
+                  onClick={() => setSelectedDish(null)}
+                  className="py-3.5 px-6 bg-transparent hover:bg-white/5 border border-gold-400/20 text-gray-400 hover:text-[#FAF9F6] text-xs font-semibold uppercase tracking-widest transition-luxury cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
